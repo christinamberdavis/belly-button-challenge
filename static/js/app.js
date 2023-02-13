@@ -52,8 +52,8 @@ function optionChanged(nameValue)
   console.log('selectedSample', selectedSample)
 
   //(sort highest to lowest and return top 10)
-  otu_ids = selectedSample[0].otu_ids.map(function (id){return "OTU " + id })
-  //console.log(otu_ids)
+  otu_labels = selectedSample[0].otu_ids.map(function (id){return "OTU " + id })
+  //console.log(otu_labels)
   sample_values = selectedSample[0].sample_values.sort(function(a, b){
     if (a > b) return -1;
     if (a == b) return 0;
@@ -61,13 +61,20 @@ function optionChanged(nameValue)
   }).slice(0,10)
   console.log('sample_values', sample_values)
 
-  otu_labels = selectedSample[0].otu_labels
-  console.log('otu_labels', otu_labels)
+  //get the demographics
+  //use shorthand to create the function in find
+  //function (demographic) {demographic.id == nameValue}
+  demographics = metaData.find(demographic => demographic.id == nameValue);
+  //loop through demographics using for/in
+  for (demographicName in demographics) {
+    //select the id; append a div; change the text to the key:value of the metadata
+    d3.select("#sample-metadata").append('div').text(demographicName + ': ' + demographics[demographicName])
+  }
 
 
   var barData = [
     {
-      y: otu_ids,
+      y: otu_labels,
       x: sample_values,
       type: 'bar',
       orientation: 'h'
@@ -77,16 +84,13 @@ function optionChanged(nameValue)
 
   var bubbleData = [
     {
-      x: otu_ids,
+      x: otu_labels,
       y: sample_values,
-      text: otu_labels,
+      text: selectedSample[0].otu_labels,
       mode: 'markers', 
-      marker: {size: sample_values, color: otu_ids, colorscale: 'red' }
+      marker: {size: sample_values, color: selectedSample[0].otu_ids}
     }
   ];
   Plotly.newPlot('bubble', bubbleData);
 
-  document.getElementById("sample-metadata").innerHTML = JSON.stringify(
-    metaData.find(element => element.id == nameValue)
-  )
 }
